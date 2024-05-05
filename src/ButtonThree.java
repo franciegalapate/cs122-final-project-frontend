@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
@@ -22,9 +24,12 @@ public class ButtonThree extends JPanel {
 
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS)); // Horizontal arrangement
-
         topPanel.setBackground(new Color(0x6256EC));
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBackground(new Color(0x6256EC));
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
         JButton btnSave = new JButton("Save");
         btnSave.setPreferredSize(new Dimension(150, 30));
@@ -48,10 +53,9 @@ public class ButtonThree extends JPanel {
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(btnSave);
 
-
         /** CENTER PANEL */
         JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS)); // Stack components vertically
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(Color.WHITE);
 
         // Create tables for each semester
@@ -65,6 +69,7 @@ public class ButtonThree extends JPanel {
             JTable table = new JTable();
             table.setFont(bFont);
             JScrollPane scrollPane = new JScrollPane(table);
+
             DefaultTableModel model = new DefaultTableModel();
             model.addColumn("Course Number");
             model.addColumn("Course Title");
@@ -103,28 +108,40 @@ public class ButtonThree extends JPanel {
         /** SETTING CONSTRAINTS AND ADDING COMPONENTS | make this last */
         add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.SOUTH);
 
+        /** ACTION LISTENERS */
         btnSave.addActionListener(e -> {
             int selectedTableIndex = dropdown.getSelectedIndex();
-            try {
-                FileWriter fw = new FileWriter("src\\firstYear\\" + fileNames[selectedTableIndex]);
-                BufferedWriter bw = new BufferedWriter(fw);
-                for (int i = 0; i < tableModels[selectedTableIndex].getRowCount(); i++) {
-                    for (int j = 0; j < tableModels[selectedTableIndex].getColumnCount(); j++) {
-                        bw.write(tableModels[selectedTableIndex].getValueAt(i, j) + "");
-                        if (j != tableModels[selectedTableIndex].getColumnCount() - 1) {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter("src\\firstYear\\" + fileNames[selectedTableIndex]))) {
+                DefaultTableModel model = tableModels[selectedTableIndex];
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    for (int j = 0; j < model.getColumnCount(); j++) {
+                        bw.write(model.getValueAt(i, j) + "");
+                        if (j != model.getColumnCount() - 1) {
                             bw.write(",");
                         }
                     }
                     bw.newLine();
                 }
-                bw.close();
-                fw.close();
-                JOptionPane.showMessageDialog(null, "Data Exported");
+                JOptionPane.showMessageDialog(null, "Data Saved");
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         });
+
+        btnBack.addActionListener(e -> {
+            JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            try {
+                Home h = new Home();
+                currentFrame.dispose();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            } catch (FontFormatException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
     }
 
     private static JComboBox<String> getStringJComboBox(Font bFont) { // dropdown menu
@@ -159,7 +176,6 @@ public class ButtonThree extends JPanel {
             e.printStackTrace();
         }
     }
-
 
     public static void main(String[] args) throws IOException, FontFormatException {
         JFrame frame = new JFrame("Main Panel");
