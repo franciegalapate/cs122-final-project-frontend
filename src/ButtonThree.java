@@ -20,40 +20,34 @@ public class ButtonThree extends JPanel {
         Font bFont = Font.createFont(Font.TRUETYPE_FONT, new File("src\\assets\\PlusJakartaSans-Regular.ttf")).deriveFont(Font.PLAIN, 13);
         Font tFont = Font.createFont(Font.TRUETYPE_FONT, new File("src\\assets\\PlusJakartaSans-Bold.ttf")).deriveFont(Font.PLAIN, 13);
 
-        /** TOP PANEL */
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(new Color(0x8378FF));
-        topPanel.setLayout(new GridLayout());
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS)); // Horizontal arrangement
+
+        topPanel.setBackground(new Color(0x6256EC));
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
         JButton btnSave = new JButton("Save");
         btnSave.setPreferredSize(new Dimension(150, 30));
         btnSave.setFont(bFont);
-        btnSave.setForeground(Color.WHITE);
-        btnSave.setBackground(new Color(0x6256EC));
+        btnSave.setForeground(Color.BLACK);
+        btnSave.setBackground(new Color(0xBEB8FF));
         btnSave.setFocusable(false);
 
         JButton btnBack = new JButton("Back to Main Menu");
-        btnBack.setPreferredSize(new Dimension(150, 10));
+        btnBack.setPreferredSize(new Dimension(150, 30));
         btnBack.setFont(bFont);
-        btnBack.setForeground(Color.WHITE);
-        btnBack.setBackground(new Color(0x6256EC));
+        btnBack.setForeground(Color.BLACK);
+        btnBack.setBackground(new Color(0xBEB8FF));
         btnBack.setFocusable(false);
-
-        JButton btnEdit = new JButton("Edit");
-        btnEdit.setPreferredSize(new Dimension(150, 30));
-        btnEdit.setFont(bFont);
-        btnEdit.setForeground(Color.WHITE);
-        btnEdit.setBackground(new Color(0x6256EC));
-        btnEdit.setFocusable(false);
 
         JComboBox<String> dropdown = getStringJComboBox(bFont);
 
-        // Add components to the topPanel | make this last
         topPanel.add(btnBack);
+        topPanel.add(Box.createHorizontalGlue());
         topPanel.add(dropdown);
-        topPanel.add(btnEdit);
+        topPanel.add(Box.createHorizontalGlue());
         topPanel.add(btnSave);
+
 
         /** CENTER PANEL */
         JPanel centerPanel = new JPanel();
@@ -79,19 +73,6 @@ public class ButtonThree extends JPanel {
             table.setModel(model);
             populateTableFromTextFile("src\\firstYear\\" + fileNames[i], model); // Populate table from text file
 
-            table.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() == 1) {
-                        int row = table.getSelectedRow();
-                        if (row != -1) {
-                            btnEdit.setEnabled(true);
-                        } else {
-                            btnEdit.setEnabled(false);
-                        }
-                    }
-                }
-            });
             semesterPanel.add(new JLabel(semesters[i], SwingConstants.CENTER), BorderLayout.NORTH);
             semesterPanel.add(scrollPane, BorderLayout.CENTER);
             centerPanel.add(semesterPanel);
@@ -99,25 +80,29 @@ public class ButtonThree extends JPanel {
             tables[i] = table;
         }
 
+        // resize column widths for each table
+        TableColumnModel[] columnModels = new TableColumnModel[semesters.length];
+        for (int i = 0; i < semesters.length; i++) {
+            TableColumnModel columnModel = tables[i].getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(100); // Course Number
+            columnModel.getColumn(1).setPreferredWidth(200); // Course Title
+            columnModel.getColumn(2).setPreferredWidth(50); // Units
+            columnModel.getColumn(3).setPreferredWidth(50); // Grades
+            columnModels[i] = columnModel;
+        }
+
+        // disable stuff yk
+        for (int i = 0; i < semesters.length; i++) {
+            for (int j = 0; j < tables[i].getColumnCount(); j++) {
+                tables[i].getColumnModel().getColumn(j).setResizable(false);
+                tables[i].getTableHeader().setReorderingAllowed(false);
+                // tables[i].setEnabled(false);
+            }
+        }
+
         /** SETTING CONSTRAINTS AND ADDING COMPONENTS | make this last */
         add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
-
-        btnEdit.addActionListener(e -> {
-            int selectedTableIndex = dropdown.getSelectedIndex();
-            int selectedRowIndex = tables[selectedTableIndex].getSelectedRow();
-            if (selectedRowIndex != -1) {
-                String courseNumber = JOptionPane.showInputDialog("Enter Course Number", tables[selectedTableIndex].getValueAt(selectedRowIndex, 0));
-                String courseTitle = JOptionPane.showInputDialog("Enter Course Title", tables[selectedTableIndex].getValueAt(selectedRowIndex, 1));
-                String units = JOptionPane.showInputDialog("Enter Units", tables[selectedTableIndex].getValueAt(selectedRowIndex, 2));
-                String grades = JOptionPane.showInputDialog("Enter Grades", tables[selectedTableIndex].getValueAt(selectedRowIndex, 3));
-
-                tables[selectedTableIndex].setValueAt(courseNumber, selectedRowIndex, 0);
-                tables[selectedTableIndex].setValueAt(courseTitle, selectedRowIndex, 1);
-                tables[selectedTableIndex].setValueAt(units, selectedRowIndex, 2);
-                tables[selectedTableIndex].setValueAt(grades, selectedRowIndex, 3);
-            }
-        });
 
         btnSave.addActionListener(e -> {
             int selectedTableIndex = dropdown.getSelectedIndex();
@@ -144,12 +129,16 @@ public class ButtonThree extends JPanel {
 
     private static JComboBox<String> getStringJComboBox(Font bFont) { // dropdown menu
         String[] options = {"First Year", "Second Year", "Third Year", "Fourth Year"};
+
         JComboBox<String> dropdown = new JComboBox<>(options);
-        dropdown.setPreferredSize(new Dimension(200, 10));
+
+        dropdown.setPreferredSize(new Dimension(100, 10));
+
         dropdown.setFont(bFont);
-        dropdown.setBackground(new Color(0x6256EC));
-        dropdown.setForeground(Color.WHITE);
+        dropdown.setBackground(new Color(0xBEB8FF));
+        dropdown.setForeground(Color.BLACK);
         dropdown.setFocusable(false);
+
         return dropdown;
     }
 
