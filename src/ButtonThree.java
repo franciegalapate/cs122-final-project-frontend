@@ -1,26 +1,24 @@
-
-
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.Dimension;
-import java.awt.event.*;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.*;
 import java.util.*;
 
 public class ButtonThree extends JPanel {
+    private DefaultTableModel[] tableModels;
+    private String[] fileNames;
+    private JTable[] tables;
+
     ButtonThree() throws IOException, FontFormatException {
         super();
         setPreferredSize(new Dimension(1000, 600));
-        GridBagLayout layout = new GridBagLayout();
-        setLayout(layout);
-        GridBagConstraints c = new GridBagConstraints();
+        setLayout(new BorderLayout());
 
-        Font fontBold = Font.createFont(Font.TRUETYPE_FONT, new File("src\\assets\\PlusJakartaSans-Bold.ttf"));
-        Font fontRegular = Font.createFont(Font.TRUETYPE_FONT, new File("src\\assets\\PlusJakartaSans-Regular.ttf"));
-        Font bFont = fontRegular.deriveFont(Font.PLAIN, 13);
-        Font tFont = fontBold.deriveFont(Font.PLAIN, 13);
+        Font bFont = Font.createFont(Font.TRUETYPE_FONT, new File("src\\assets\\PlusJakartaSans-Regular.ttf")).deriveFont(Font.PLAIN, 13);
+        Font tFont = Font.createFont(Font.TRUETYPE_FONT, new File("src\\assets\\PlusJakartaSans-Bold.ttf")).deriveFont(Font.PLAIN, 13);
 
         /** TOP PANEL */
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -33,7 +31,7 @@ public class ButtonThree extends JPanel {
         btnSave.setFont(bFont);
         btnSave.setForeground(Color.WHITE);
         btnSave.setBackground(new Color(0x6256EC));
-        btnSave.setFocusable(false);;
+        btnSave.setFocusable(false);
 
         JButton btnBack = new JButton("Back to Main Menu");
         btnBack.setPreferredSize(new Dimension(150, 10));
@@ -58,115 +56,90 @@ public class ButtonThree extends JPanel {
         topPanel.add(btnSave);
 
         /** CENTER PANEL */
-        JPanel centerPanel = new JPanel(new BorderLayout());
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS)); // Stack components vertically
         centerPanel.setBackground(Color.WHITE);
 
-        JTable table = new JTable();
-        table.setFont(bFont);
-        JScrollPane scrollPane = new JScrollPane(table);
-        JTableHeader tableHeader = table.getTableHeader();
-        tableHeader.setFont(tFont);
-        table.setShowGrid(false);
-        table.setRowHeight(18);
+        // Create tables for each semester
+        String[] semesters = {"First Semester", "Second Semester", "Short term"};
+        fileNames = new String[]{"firstSemester.txt", "secondSemester.txt", "shortTerm.txt"};
+        tableModels = new DefaultTableModel[semesters.length];
+        tables = new JTable[semesters.length];
 
-        // Add components to the centerPanel | make this last
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        for (int i = 0; i < semesters.length; i++) {
+            JPanel semesterPanel = new JPanel(new BorderLayout());
+            JTable table = new JTable();
+            table.setFont(bFont);
+            JScrollPane scrollPane = new JScrollPane(table);
+            DefaultTableModel model = new DefaultTableModel();
+            model.addColumn("Course Number");
+            model.addColumn("Course Title");
+            model.addColumn("Units");
+            model.addColumn("Grades");
+            table.setModel(model);
+            populateTableFromTextFile("src\\firstYear\\" + fileNames[i], model); // Populate table from text file
 
-        // Load data into the table from a file
-        DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("COURSE NUMBER");
-        model.addColumn("DESCRIPTIVE TITLE");
-        model.addColumn("UNITS");
-        table.setModel(model);
-
-        // Read data from file and add to table model
-        try {
-            File file = new File("src\\subjectsWithoutGrades\\firstYear.txt");
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] columns = line.split(",");
-                model.addRow(columns);
-            }
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            table.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 1) {
+                        int row = table.getSelectedRow();
+                        if (row != -1) {
+                            btnEdit.setEnabled(true);
+                        } else {
+                            btnEdit.setEnabled(false);
+                        }
+                    }
+                }
+            });
+            semesterPanel.add(new JLabel(semesters[i], SwingConstants.CENTER), BorderLayout.NORTH);
+            semesterPanel.add(scrollPane, BorderLayout.CENTER);
+            centerPanel.add(semesterPanel);
+            tableModels[i] = model;
+            tables[i] = table;
         }
 
-        // Set custom cell renderer to make rows bold
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                // Check if the row should be bold (e.g., row 2)
-                if (row == 0) {
-                    c.setFont(tFont);
-                }
-                if (row == 12) {
-                    c.setFont(tFont);
-                }
-                if (row == 24) {
-                    c.setFont(tFont);
-                }
-                return c;
-            }
-        });
-        btnEdit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                 String courseNumber = JOptionPane.showInputDialog("Enter Course Number");
-                 String courseName = JOptionPane.showInputDialog("Enter Course Name");
-                 table.getModel().setValueAt(courseNumber, table.getSelectedRow(), 0);
-                 table.getModel().setValueAt(courseName, table.getSelectedRow(), 1);
-            }
-         });
-        btnSave.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try{
-                    File file = new File("src\\subjectsWithoutGrades\\firstYear.txt");
-                    if(!file.exists()){
-                        file.createNewFile();
-                    }
-
-                    FileWriter fw = new FileWriter(file.getAbsoluteFile());
-                    BufferedWriter bw = new BufferedWriter(fw);
-
-                    for(int i = 0; i < table.getRowCount(); i++) {
-                        for(int j = 0; j < table.getColumnCount(); j++) {
-                            bw.write(table.getModel().getValueAt(i, j) + "");
-                        }
-                        bw.write(", \n");
-                    }
-                    bw.close();
-                    fw.close();
-                    JOptionPane.showMessageDialog(null, "Data Exported");
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        });
-
         /** SETTING CONSTRAINTS AND ADDING COMPONENTS | make this last */
+        add(topPanel, BorderLayout.NORTH);
+        add(centerPanel, BorderLayout.CENTER);
 
-        // Set constraints for topPanel
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 3; // Span across all columns
-        c.gridheight = 1; // Set to 1 for a small height
-        c.weightx = 1.0;
-        c.weighty = 0.020; // Adjust this value as needed
-        c.fill = GridBagConstraints.BOTH;
-        add(topPanel, c);
+        btnEdit.addActionListener(e -> {
+            int selectedTableIndex = dropdown.getSelectedIndex();
+            int selectedRowIndex = tables[selectedTableIndex].getSelectedRow();
+            if (selectedRowIndex != -1) {
+                String courseNumber = JOptionPane.showInputDialog("Enter Course Number", tables[selectedTableIndex].getValueAt(selectedRowIndex, 0));
+                String courseTitle = JOptionPane.showInputDialog("Enter Course Title", tables[selectedTableIndex].getValueAt(selectedRowIndex, 1));
+                String units = JOptionPane.showInputDialog("Enter Units", tables[selectedTableIndex].getValueAt(selectedRowIndex, 2));
+                String grades = JOptionPane.showInputDialog("Enter Grades", tables[selectedTableIndex].getValueAt(selectedRowIndex, 3));
 
-        // Set constraints for centerPanel
-        c.gridx = 0;
-        c.gridy = 1;
-        c.gridwidth = 3; // Span across all columns
-        c.weightx = 1.0;
-        c.weighty = 1.0;
-        add(centerPanel, c);
+                tables[selectedTableIndex].setValueAt(courseNumber, selectedRowIndex, 0);
+                tables[selectedTableIndex].setValueAt(courseTitle, selectedRowIndex, 1);
+                tables[selectedTableIndex].setValueAt(units, selectedRowIndex, 2);
+                tables[selectedTableIndex].setValueAt(grades, selectedRowIndex, 3);
+            }
+        });
+
+        btnSave.addActionListener(e -> {
+            int selectedTableIndex = dropdown.getSelectedIndex();
+            try {
+                FileWriter fw = new FileWriter("src\\firstYear\\" + fileNames[selectedTableIndex]);
+                BufferedWriter bw = new BufferedWriter(fw);
+                for (int i = 0; i < tableModels[selectedTableIndex].getRowCount(); i++) {
+                    for (int j = 0; j < tableModels[selectedTableIndex].getColumnCount(); j++) {
+                        bw.write(tableModels[selectedTableIndex].getValueAt(i, j) + "");
+                        if (j != tableModels[selectedTableIndex].getColumnCount() - 1) {
+                            bw.write(",");
+                        }
+                    }
+                    bw.newLine();
+                }
+                bw.close();
+                fw.close();
+                JOptionPane.showMessageDialog(null, "Data Exported");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
     }
 
     private static JComboBox<String> getStringJComboBox(Font bFont) { // dropdown menu
@@ -180,9 +153,28 @@ public class ButtonThree extends JPanel {
         return dropdown;
     }
 
+    private static void populateTableFromTextFile(String filePath, DefaultTableModel model) throws IOException {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            System.out.println("File not found: " + filePath);
+            return;
+        }
+
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] columns = line.split(",");
+                model.addRow(columns);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public static void main(String[] args) throws IOException, FontFormatException {
         JFrame frame = new JFrame("Main Panel");
-        frame.setSize(1000,600);
+        frame.setSize(1000, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(new ButtonThree());
         frame.pack();
@@ -190,6 +182,4 @@ public class ButtonThree extends JPanel {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
-
-
 }
