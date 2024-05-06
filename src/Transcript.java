@@ -7,31 +7,36 @@ import java.io.*;
 import java.util.Scanner;
 
 /**
- * 3
- * If user clicked "Grades"
- * ONLY SHOWS GRADES OF THE CURRENT SEM YOU'RE ENROLLED IN
+ * 5
+ * If user clicked "Transcript"
+ * SHOWS ALL THE SUBJECTS AND GRADES OF FIRST YEAR ONLY (Because you're a first year student lol)
 
  FEATURES:
- * Shows grades
+ * Show subjects with grades for each term
  * Enter grades for subjects recently finished
  * Edit a course
  * Add other courses taken
 
  THINGS NEDED:
+ * Correct data txt files from first to fourth year
+ * Make dropdown button work
  * Buttons DO NOT WORK
  */
 
-public class Grades extends JFrame {
+public class Transcript extends JFrame {
 
     /** INITIALIZE VARIABLES */
     JFrame frame;
-    JPanel topPanel, centerPanel, bottomPanel;
-    JButton btnSave, btnAdd, btnHelp, btnBack;
+    JPanel topPanel, centerPanel, bottomPanel, semesterPanel;
+    JButton btnSave, btnAdd, btnHelp, btnShowGPA, btnBack;
     JLabel title;
+    JComboBox<String> btnDropdown;
+    JTable table;
+    JScrollPane scrollPane;
     Font boldFont, regularFont;
 
     /** MAIN CONSTRUCTOR */
-    Grades() throws IOException, FontFormatException {
+    Transcript() throws IOException, FontFormatException {
 
         /** INITIALIZE FRAME */
         frame = new JFrame("Personal Checklist Manager");
@@ -58,8 +63,11 @@ public class Grades extends JFrame {
         title.setForeground(Color.WHITE);
         title.setFocusable(false);
 
+        btnDropdown = getStringJComboBox(boldFont);
+
         topPanel.add(title, BorderLayout.WEST);
         topPanel.add(Box.createRigidArea(new Dimension(200, 0)));
+        topPanel.add(btnDropdown, BorderLayout.EAST);
 
         // CENTER PANEL
         centerPanel = new JPanel();
@@ -68,46 +76,46 @@ public class Grades extends JFrame {
         centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         centerPanel.setFont(regularFont);
 
-        String semester = "First Semester";
-        String fileName = "first-year-first-semester.txt";
+        String[] semesters = {"First Semester", "Second Semester", "Short term"};
+        String[] fileNames = {"first-year-first-semester.txt", "first-year-second-semester.txt", "first-year-short-term.txt"};
 
-        JPanel semesterPanel = new JPanel(new BorderLayout());
-        semesterPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        for (int i = 0; i < semesters.length; i++) {
+            JPanel semesterPanel = new JPanel(new BorderLayout());
+            semesterPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JTable table = new JTable();
-        table.setFont(regularFont);
-        table.getTableHeader().setFont(boldFont);
-        table.getTableHeader().setReorderingAllowed(false);
+            JTable table = new JTable();
+            table.setFont(regularFont);
+            table.getTableHeader().setFont(boldFont);
+            table.getTableHeader().setReorderingAllowed(false);
 
-        JScrollPane scrollPane = new JScrollPane(table);
+            JScrollPane scrollPane = new JScrollPane(table);
 
-        DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("Status");
-        model.addColumn("Course Number");
-        model.addColumn("Course Title");
-        model.addColumn("Units");
-        model.addColumn("Grades");
+            DefaultTableModel model = new DefaultTableModel();
+            model.addColumn("Course Number");
+            model.addColumn("Course Title");
+            model.addColumn("Units");
+            model.addColumn("Grades");
 
-        table.setModel(model);
+            table.setModel(model);
 
-        // Ensure that the file path is correct
-        String filePath = "src\\data\\grades\\grades-second-semester.txt";
-        populateTableFromTextFile(filePath, model);
+            // Ensure that the file path is correct
+            String filePath = "src\\data\\transcript\\" + fileNames[i];
+            populateTableFromTextFile(filePath, model);
 
-        // Adjust preferred column widths based on your data
-        TableColumnModel columnModel = table.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(20);
-        columnModel.getColumn(1).setPreferredWidth(100);
-        columnModel.getColumn(2).setPreferredWidth(200);
-        columnModel.getColumn(3).setPreferredWidth(50);
-        columnModel.getColumn(4).setPreferredWidth(50);
+            // Adjust preferred column widths based on your data
+            TableColumnModel columnModel = table.getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(100);
+            columnModel.getColumn(1).setPreferredWidth(200);
+            columnModel.getColumn(2).setPreferredWidth(50);
+            columnModel.getColumn(3).setPreferredWidth(50);
 
-        table.getTableHeader().setReorderingAllowed(false);
-        table.getTableHeader().setResizingAllowed(false);
+            table.getTableHeader().setReorderingAllowed(false);
+            table.getTableHeader().setResizingAllowed(false);
 
-        semesterPanel.add(new JLabel(semester, SwingConstants.CENTER), BorderLayout.NORTH);
-        semesterPanel.add(scrollPane, BorderLayout.CENTER);
-        centerPanel.add(semesterPanel);
+            semesterPanel.add(new JLabel(semesters[i], SwingConstants.CENTER), BorderLayout.NORTH);
+            semesterPanel.add(scrollPane, BorderLayout.CENTER);
+            centerPanel.add(semesterPanel);
+        }
 
         // BOTTOM PANEL
         bottomPanel = new JPanel();
@@ -136,6 +144,13 @@ public class Grades extends JFrame {
         btnAdd.setBackground(new Color(0xBEB8FF));
         btnAdd.setFocusable(false);
 
+        btnShowGPA = new JButton("Show GPA");
+        btnShowGPA.setPreferredSize(new Dimension(120, 30));
+        btnShowGPA.setFont(boldFont);
+        btnShowGPA.setForeground(Color.BLACK);
+        btnShowGPA.setBackground(new Color(0xBEB8FF));
+        btnShowGPA.setFocusable(false);
+
         btnSave = new JButton("Save");
         btnSave.setPreferredSize(new Dimension(100, 30));
         btnSave.setFont(boldFont);
@@ -148,6 +163,8 @@ public class Grades extends JFrame {
         bottomPanel.add(btnBack);
         bottomPanel.add(Box.createHorizontalGlue());
         bottomPanel.add(btnAdd);
+        bottomPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        bottomPanel.add(btnShowGPA);
         bottomPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         bottomPanel.add(btnSave);
 
@@ -167,6 +184,20 @@ public class Grades extends JFrame {
 
     /** OTHER METHODS */
 
+    // DROPDOWN MENU
+    private static JComboBox<String> getStringJComboBox(Font bFont) {
+        String[] years = {"First Year", "Second Year", "Third Year", "Fourth Year"};
+
+        JComboBox<String> dropdown = new JComboBox<>(years);
+        dropdown.setPreferredSize(new Dimension(150, 30));
+
+        dropdown.setFont(bFont);
+        dropdown.setBackground(new Color(0xBEB8FF));
+        dropdown.setForeground(Color.BLACK);
+        dropdown.setFocusable(false);
+
+        return dropdown;
+    }
 
     private static void populateTableFromTextFile(String filePath, DefaultTableModel model) throws IOException {
         File file = new File(filePath);
@@ -188,7 +219,7 @@ public class Grades extends JFrame {
 
     /** MAIN METHOD */
     public static void main(String[] args) throws IOException, FontFormatException {
-        Grades grades = new Grades();
+        Transcript c = new Transcript();
     }
 
 } // END OF MAIN CLASS

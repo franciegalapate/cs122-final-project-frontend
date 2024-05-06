@@ -1,0 +1,10 @@
+7868,FIT CS,2,94,97,,Not Yet Submitted
+9300,CS 121,3,94,,,Not Yet Submitted
+9301A,CS 122,2,85,90,,Not Yet Submitted
+9301B,CS 122L,1,85,90,,Not Yet Submitted
+9302A,CS 123,2,91,91,,Not Yet Submitted
+9302B,CS 123L,1,91,91,,Not Yet Submitted
+9303,GSELF,3,96,99,,Not Yet Submitted
+9304,GPCOM,3,88,,,Not Yet Submitted
+9305,GENVI,3,93,89,,Not Yet Submitted
+9306,CFE 102,3,96,92,,Not Yet Submitted
