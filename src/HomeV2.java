@@ -15,7 +15,7 @@ public class HomeV2 extends JFrame {
     JButton btnExit;
     Font fontRegular, fontBold, mTitle, sTitle, qTitle, regular;
     ImageIcon backgroundImage;
-    JTextField userID = new JTextField();
+    public JTextField userID = new JTextField();
 
     public HomeV2() throws IOException, FontFormatException {
         frameV2 = new JFrame();
@@ -93,6 +93,8 @@ public class HomeV2 extends JFrame {
         userID.setBorder(javax.swing.BorderFactory.createEmptyBorder());
         userID.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(0xBEB8FF)));
 
+
+
         // button
         btnChoice1 = new Button("LOGIN");
 
@@ -120,21 +122,15 @@ public class HomeV2 extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == btnChoice1) {
                             try {
-                                //Home home = new Home();
-                                /*frameV2.getContentPane().removeAll(); // remove existing components from the frame
-                                frameV2.getContentPane().setLayout(new BorderLayout());
-                                frameV2.getContentPane().add(home, BorderLayout.CENTER);
-                                frameV2.getContentPane().revalidate(); // refresh layout
-                                frameV2.getContentPane().repaint();
-                                frameV2.dispose();*/
                                 frameV2.dispose();
-                                new Home().setVisible(true);
+                                new Home(userID.getText()).setVisible(true);
                             } catch (IOException | FontFormatException ex) {
                                 ex.printStackTrace();
                     }
                 }
             }
         });
+
     }
     public static void main(String[] args) throws IOException, FontFormatException {
         HomeV2 homeV2 = new HomeV2();
